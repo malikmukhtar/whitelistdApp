@@ -1,4 +1,8 @@
 import Head from "next/head";
+import Link from "next/link";
+import { Menu } from "antd";
+const { Item } = Menu;
+import axios from "axios";
 import styles from "../styles/Home.module.css";
 import Web3Modal from "web3modal";
 import { providers, Contract } from "ethers";
@@ -15,6 +19,9 @@ export default function Home() {
   // numberOfWhitelisted tracks the number of addresses's whitelisted
   const [numberOfWhitelisted, setNumberOfWhitelisted] = useState(0);
   // Create a reference to the Web3 Modal (used for connecting to Metamask) which persists as long as the page is open
+
+  //tracking number of links from web3storage
+  const [linkData, setLinkData] = useState([]);
   const web3ModalRef = useRef();
 
   /**
@@ -93,7 +100,8 @@ export default function Home() {
         provider
       );
       // call the numAddressesWhitelisted from the contract
-      const _numberOfWhitelisted = await whitelistContract.numAddressesWhitelisted();
+      const _numberOfWhitelisted =
+        await whitelistContract.numAddressesWhitelisted();
       setNumberOfWhitelisted(_numberOfWhitelisted);
     } catch (err) {
       console.error(err);
@@ -189,6 +197,13 @@ export default function Home() {
     }
   }, [walletConnected]);
 
+  useEffect(async () => {
+    const { data } = await axios.get(
+      "https://ipfs.io/ipfs/bafybeianvtrlrz7rznueku7jyzgserfeu27ewvps5ppcapfo77dkjsrsly/dApp%20links.txt"
+    );
+    setLinkData(data);
+  }, [linkData.length]);
+
   return (
     <div>
       <Head>
@@ -196,6 +211,18 @@ export default function Home() {
         <meta name="description" content="Whitelist-Dapp" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <Menu theme="dark" mode="horizontal">
+        {linkData.map((link) => {
+          return (
+            <Item key={link.link}>
+              <Link href={link.link}>
+                <a target='_blank'>{link.title}</a>
+              </Link>
+            </Item>
+          );
+        })}
+      </Menu>
       <div className={styles.main}>
         <div>
           <h1 className={styles.title}>Welcome to Crypto Devs!</h1>
